@@ -1,0 +1,45 @@
+networks:
+  web:
+    driver: bridge
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: jellyfin-tailscale
+    hostname: jellyfin
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+    volumes:
+      - ./tailscale-data:/var/lib/tailscale
+      - ./certs/:/app
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    network_mode: host
+    entrypoint: >
+      sh -c "
+      /usr/local/bin/containerboot &
+      sleep 3 &&
+      cd /app && tailscale cert jellyfin.welara-sun.ts.net &&
+      wait
+      "
+
+  jellyfin:
+    image: linuxserver/jellyfin
+    container_name: jellyfin
+    networks:
+      - web
+    ports:
+      - 8096:8096
+    volumes:
+      - /mnt/second/docker/jellyfin-config:/config
+      - /mnt/second/docker/jellyfin-cache:/cache
+      - /mnt/first/home/q/files/media:/media/main
+      - /mnt/second/media:/media/disk
+      - ~/files/media/Shows/:/nvme/media/Shows
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/dri:/dev/dri

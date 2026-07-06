@@ -1,0 +1,76 @@
+networks:
+  web:
+    driver: bridge
+
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: qui-tailscale
+    hostname: qui
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+    volumes:
+      - ./tailscale-data:/var/lib/tailscale
+      - ./certs/:/app
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    network_mode: host
+    entrypoint: >
+      sh -c "
+      /usr/local/bin/containerboot &
+      sleep 3 &&
+      cd /app && tailscale cert qui.welara-sun.ts.net &&
+      wait
+      "
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - WEBUI_PORT=6969
+      - TORRENTING_PORT=6881
+      - DOCKER_MODS=ghcr.io/gabe565/linuxserver-mod-vuetorrent
+    volumes:
+      - /mnt/second/docker/qbittorrent/appdata:/config
+      - /home/q/downloads:/downloads
+      - /mnt/first/home/q/files/media:/media
+      - ~/files/media:/nvme/media
+      - /mnt/second:/disk
+    ports:
+      - 6969:6969
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
+
+  qui:
+    image: ghcr.io/autobrr/qui:latest
+    container_name: qui
+    volumes:
+     - /mnt/second/docker/qui-config:/config
+    ports:
+      - 7476:7476
+    restart: unless-stopped
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: jackett
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Kyiv
+      - AUTO_UPDATE=true
+    volumes:
+      - /mnt/second/docker/jackett/config:/config
+      - /mnt/second/docker/jackett/downloads:/downloads
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+    networks:
+      - web

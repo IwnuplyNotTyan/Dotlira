@@ -1,0 +1,45 @@
+networks:
+  proxy_net:
+    external: true
+  ts_net:
+    driver: bridge
+
+services:
+  tailscale-caddy:
+    image: tailscale/tailscale:latest
+    container_name: caddy-tailscale
+    hostname: caddy
+    ports:
+      - "443:443"
+      - "80:80"
+    networks:
+      - ts_net
+      - proxy_net
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - /mnt/second/docker/tailscale-caddy-state:/var/lib/tailscale
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy
+    network_mode: service:tailscale-caddy
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./../jellyfin/certs:/certs/jellyfin:ro
+      - ./../vuetorrent/certs:/certs/qui:ro
+      - /mnt/second/docker/caddy_data:/data
+      - /mnt/second/docker/caddy_config:/config
+    depends_on:
+      tailscale-caddy:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped

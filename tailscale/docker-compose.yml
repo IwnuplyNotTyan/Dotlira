@@ -1,0 +1,30 @@
+services:
+#  tailscale:
+#    image: tailscale/tailscale:latest
+#    container_name: tailscale
+#    hostname: infra
+#    dns:
+#      - 100.100.100.100
+#    environment:
+#      - TS_AUTHKEY=${TS_AUTHKEY}
+#      - TS_STATE_DIR=/var/lib/tailscale
+#      - TS_USERSPACE=true
+#      - TS_EXTRA_ARGS=--accept-routes
+#    volumes:
+#      - /mnt/second/docker/tailscale-data:/var/lib/tailscale
+#    cap_add:
+#      - NET_ADMIN
+#    restart: unless-stopped
+#    network_mode: host
+
+  tsidp:
+    container_name: tsidp
+    image: ghcr.io/tailscale/tsidp:latest
+    volumes:
+      - /mnt/second/docker/tsidp-data:/data
+    environment:
+      - TAILSCALE_USE_WIP_CODE=1
+      - TS_STATE_DIR=/data
+      - TS_HOSTNAME=idp
+      - TSIDP_ENABLE_STS=1
+      - TS_AUTHKEY=${TS_AUTHKEY}
