@@ -37,6 +37,7 @@ services:
       - 23233:23233
       - 9418:9418
     environment:
-      SOFT_SERVE_INITIAL_ADMIN_KEYS: ${SOFT_SERVE_INITIAL_ADMIN_KEYS}
+      - SOFT_SERVE_INITIAL_ADMIN_KEYS=${SOFT_SERVE_INITIAL_ADMIN_KEYS}
+      - SOFT_SERVE_SSH_PUBLIC_URL=ssh://git.welara-sun.ts.net:23231
     restart: unless-stopped
 
