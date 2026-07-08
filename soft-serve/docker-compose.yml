@@ -1,0 +1,42 @@
+networks:
+  web:
+    driver: bridge
+
+services:
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: soft-serve-tailscale
+    hostname: git
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=true
+    volumes:
+      - ./tailscale-data:/var/lib/tailscale
+      - ./certs/:/app
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    network_mode: host
+    entrypoint: >
+      sh -c "
+      /usr/local/bin/containerboot &
+      sleep 3 &&
+      tailscale funnel 23231 &
+      wait
+      "
+
+  soft-serve:
+    image: charmcli/soft-serve:latest
+    container_name: soft-serve
+    volumes:
+      - /mnt/second/docker/soft-serve:/soft-serve
+    ports:
+      - 23231:23231
+      - 23232:23232
+      - 23233:23233
+      - 9418:9418
+    environment:
+      SOFT_SERVE_INITIAL_ADMIN_KEYS: ${SOFT_SERVE_INITIAL_ADMIN_KEYS}
+    restart: unless-stopped
+

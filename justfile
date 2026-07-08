@@ -1,4 +1,4 @@
-services := "tailscale vuetorrent jellyfin caddy"
+services := "soft-serve tailscale vuetorrent jellyfin caddy"
 
 up-all:
     #!/usr/bin/env bash
