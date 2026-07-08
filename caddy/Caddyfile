@@ -4,18 +4,18 @@
 
 https://jellyfin.welara-sun.ts.net {
   tls /certs/jellyfin/jellyfin.welara-sun.ts.net.crt /certs/jellyfin/jellyfin.welara-sun.ts.net.key
-
   reverse_proxy 100.98.218.49:8096 {
     header_up Host {http.request.host}
-    header_up X-Forwarded-Proto {http.request.scheme}
+    header_up X-Forwarded-Proto https
+    header_up X-Forwarded-Host {http.request.host}
   }
 }
 
 https://qui.welara-sun.ts.net {
   tls /certs/qui/qui.welara-sun.ts.net.crt /certs/qui/qui.welara-sun.ts.net.key
-
   reverse_proxy 100.114.19.68:7476 {
     header_up Host {http.request.host}
-    header_up X-Forwarded-Proto {http.request.scheme}
+    header_up X-Forwarded-Proto https
+    header_up X-Forwarded-Host {http.request.host}
   }
 }
