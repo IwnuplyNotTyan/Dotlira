@@ -24,6 +24,16 @@ Setup https://idp.example.ts.net
 
 and update client id & secret id in jellyfin/qui config's
 
+
+In jellyfin install [SSO-Auth](https://github.com/9p4/jellyfin-plugin-sso), and set this settings:
+
+|Name|Setting|
+|----|-------|
+|Name|tailscale|
+|OpenID Endpoint|https://idp.example.ts.net/.well-known/openid-configuration|
+|Client & Secret ID| *Check in OIDC settings|
+|Scheme Override|https|
+
 ---
 
 # Made without 🫀
