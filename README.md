@@ -6,7 +6,7 @@
 1. [Check official docker guide](https://docs.docker.com/engine/install/)
 2. 
 
-> ![IMPORTANT]
+> [!IMPORTANT]
 > All path's in `/mnt/second/docker`, link's in `Caddyfile` fix and tailscale require TS_AUTHKEY's
 
 ```sh
