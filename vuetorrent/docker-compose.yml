@@ -2,7 +2,6 @@ networks:
   web:
     driver: bridge
 
-
 services:
   tailscale:
     image: tailscale/tailscale:latest
