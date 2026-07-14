@@ -1,1 +1,12 @@
-services:
+include:
+  - tailscale/docker-compose.yml
+#  - caddy/docker-compose.yml
+  - jellyfin/docker-compose.yml
+#  - paperless/docker-compose.yml
+#  - soft-serve/docker-compose.yml
+#  - syncthing/docker-compose.yml
+  - vuetorrent/docker-compose.yml
+
+networks:
+  default:
+    name: selfhosted

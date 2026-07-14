@@ -1,31 +1,8 @@
 networks:
-  web:
-    driver: bridge
+  default:
+    name: selfhosted
 
 services:
-  tailscale:
-    image: tailscale/tailscale:latest
-    container_name: qui-tailscale
-    hostname: qui
-    environment:
-      - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_STATE_DIR=/var/lib/tailscale
-      - TS_USERSPACE=true
-    volumes:
-      - ./tailscale-data:/var/lib/tailscale
-      - ./certs/:/app
-    cap_add:
-      - NET_ADMIN
-    restart: unless-stopped
-    network_mode: host
-    entrypoint: >
-      sh -c "
-      /usr/local/bin/containerboot &
-      sleep 3 &&
-      cd /app && tailscale cert qui.welara-sun.ts.net &&
-      wait
-      "
-
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent
@@ -51,6 +28,11 @@ services:
   qui:
     image: ghcr.io/autobrr/qui:latest
     container_name: qui
+    labels:
+      - "docktail.service.enable=true"
+      - "docktail.service.name=qui"
+      - "docktail.service.port=7476"
+      - "docktail.service.service-port=443"
     volumes:
      - /mnt/second/docker/qui-config:/config
     ports:
@@ -71,5 +53,3 @@ services:
     ports:
       - 9117:9117
     restart: unless-stopped
-    networks:
-      - web

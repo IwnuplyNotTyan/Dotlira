@@ -1,22 +1,4 @@
 services:
-#  tailscale:
-#    image: tailscale/tailscale:latest
-#    container_name: tailscale
-#    hostname: infra
-#    dns:
-#      - 100.100.100.100
-#    environment:
-#      - TS_AUTHKEY=${TS_AUTHKEY}
-#      - TS_STATE_DIR=/var/lib/tailscale
-#      - TS_USERSPACE=true
-#      - TS_EXTRA_ARGS=--accept-routes
-#    volumes:
-#      - /mnt/second/docker/tailscale-data:/var/lib/tailscale
-#    cap_add:
-#      - NET_ADMIN
-#    restart: unless-stopped
-#    network_mode: host
-
   tsidp:
     container_name: tsidp
     image: ghcr.io/tailscale/tsidp:latest
@@ -28,3 +10,59 @@ services:
       - TS_HOSTNAME=idp
       - TSIDP_ENABLE_STS=1
       - TS_AUTHKEY=${TS_AUTHKEY}
+
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: infra
+    entrypoint: >
+      sh -c "
+      /usr/local/bin/containerboot &
+      until tailscale serve --bg --https=443 http://localhost:8096 2>/dev/null; do
+        sleep 2
+      done &
+      until tailscale serve --bg --https=443 --service=svc:qui http://localhost:7476 2>/dev/null; do
+        sleep 2
+      done &
+      while true; do
+        tailscale serve advertise svc:jellyfin 2>/dev/null
+        tailscale serve advertise svc:qui 2>/dev/null
+        sleep 30
+      done &
+      wait
+      "
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY_DOCKTAIL}
+      - TS_EXTRA_ARGS=--advertise-tags=tag:docktail-server
+      - TS_USERSPACE=true
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SOCKET=/var/run/tailscale/tailscaled.sock
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+      - tailscale-socket:/var/run/tailscale
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    network_mode: host
+
+  docktail:
+    image: ghcr.io/marvinvr/docktail:latest
+    depends_on:
+      - tailscale
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - tailscale-socket:/var/run/tailscale
+    environment:
+      - TAILSCALE_OAUTH_CLIENT_ID=${TAILSCALE_OAUTH_CLIENT_ID}
+      - TAILSCALE_OAUTH_CLIENT_SECRET=${TAILSCALE_OAUTH_CLIENT_SECRET}
+    networks:
+     - default
+
+volumes:
+  tailscale-state:
+  tailscale-socket:
+
+networks:
+  default:
+    name: selfhosted
