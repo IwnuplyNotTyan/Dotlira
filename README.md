@@ -10,8 +10,8 @@
 > All path's in `/mnt/second/docker`, link's in `Caddyfile` fix and tailscale require TS_AUTHKEY's
 
 ```sh
-git clone https://github.com/iwnuplynottyan/dotlira
-just up-all
+git clone https://github.com/iwnuplynottyan/dotlira && cd dotlira
+docker compose up -d
 ```
 
 3. OIDC
